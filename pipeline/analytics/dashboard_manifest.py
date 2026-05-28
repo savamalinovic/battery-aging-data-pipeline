@@ -1,0 +1,114 @@
+from typing import Any
+
+import pandas as pd
+
+
+def build_dashboard_manifest() -> pd.DataFrame:
+    rows: list[dict[str, Any]] = [
+        {
+            "dataset_name": "cycle_summary",
+            "file_path": "cleaned/cycle_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Internal / Validation",
+            "grain": "one row per raw cycle",
+            "description": "Central cleaned cycle-level table used as the base for downstream analytics.",
+        },
+        {
+            "dataset_name": "discharge_cycles",
+            "file_path": "cleaned/discharge_cycles.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Battery Health / Trends",
+            "grain": "one row per discharge cycle",
+            "description": "Main health-analysis table with SOH, capacity change, voltage, temperature, and duration metrics.",
+        },
+        {
+            "dataset_name": "invalid_cycles",
+            "file_path": "quality/invalid_cycles.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Data Quality",
+            "grain": "one row per validation issue",
+            "description": "List of cycles that failed validation checks.",
+        },
+        {
+            "dataset_name": "battery_health_summary",
+            "file_path": "analytics/battery_health_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Overview",
+            "grain": "one row per battery",
+            "description": "Battery-level health KPIs including final SOH, EOL, degradation rate, duration loss, and health rank.",
+        },
+        {
+            "dataset_name": "degradation_summary",
+            "file_path": "analytics/degradation_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Degradation",
+            "grain": "one row per battery",
+            "description": "Battery-level capacity degradation summary.",
+        },
+        {
+            "dataset_name": "rolling_degradation_summary",
+            "file_path": "analytics/rolling_degradation_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Degradation",
+            "grain": "one row per discharge cycle",
+            "description": "Cycle-level rolling degradation metrics for trend visualization.",
+        },
+        {
+            "dataset_name": "soh_eol_summary",
+            "file_path": "analytics/soh_eol_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "SOH & EOL",
+            "grain": "one row per battery",
+            "description": "SOH and EOL summary including first cycle below 80% SOH and first EOL crossing.",
+        },
+        {
+            "dataset_name": "life_stage_summary",
+            "file_path": "analytics/life_stage_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Life Stage",
+            "grain": "one row per battery and life stage",
+            "description": "Aggregated metrics for early, middle, and late battery life.",
+        },
+        {
+            "dataset_name": "temperature_summary",
+            "file_path": "analytics/temperature_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Temperature",
+            "grain": "one row per battery and life stage",
+            "description": "Temperature behavior by life stage, including working temperature and delta to ambient.",
+        },
+        {
+            "dataset_name": "voltage_summary",
+            "file_path": "analytics/voltage_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Voltage",
+            "grain": "one row per battery and life stage",
+            "description": "Voltage behavior by life stage, including average voltage drop and correlations.",
+        },
+        {
+            "dataset_name": "discharge_duration_summary",
+            "file_path": "analytics/discharge_duration_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Discharge Duration",
+            "grain": "one row per battery",
+            "description": "Discharge duration loss and correlation with capacity/SOH.",
+        },
+        {
+            "dataset_name": "correlation_summary",
+            "file_path": "analytics/correlation_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Correlations",
+            "grain": "one row per metric pair and scope",
+            "description": "Pearson correlations between temperature, capacity, SOH, duration, and voltage metrics.",
+        },
+        {
+            "dataset_name": "data_quality_summary",
+            "file_path": "analytics/data_quality_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Data Quality",
+            "grain": "one row per battery",
+            "description": "Battery-level data quality score and invalid-cycle counts.",
+        },
+    ]
+
+    return pd.DataFrame(rows)
