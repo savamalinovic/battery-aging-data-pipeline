@@ -49,8 +49,42 @@ def show_overview(data: dict[str, pd.DataFrame]) -> None:
     col2.metric("Average final SOH", f"{avg_final_soh:.2f}%")
     col3.metric("Reached EOL", int(reached_eol_count))
 
+    st.markdown(
+        """
+        **SOH (State of Health)** shows how much usable capacity a battery has left
+        compared with its first measured discharge capacity. In this project,
+        the first discharge cycle starts at 100% SOH for each battery.
+
+        **EOL (End of Life)** is reached when SOH first falls to 70% or lower.
+        The project uses the first crossing rule, meaning the EOL cycle is the
+        first discharge cycle where the battery reaches that threshold, even if
+        later measurements temporarily recover above 70%.
+        """
+    )
+
     st.subheader("Battery health ranking")
-    st.dataframe(battery_health, use_container_width=True)
+
+    battery_health_display = battery_health.rename(
+        columns={
+            "battery_id": "Battery",
+            "first_capacity_ah": "Initial capacity (Ah)",
+            "final_capacity_ah": "Final capacity (Ah)",
+            "capacity_loss_ah": "Capacity loss (Ah)",
+            "capacity_loss_percent": "Capacity loss (%)",
+            "initial_soh": "Initial SOH",
+            "final_soh": "Final SOH",
+            "total_discharge_cycles": "Total discharge cycles",
+            "cycle_below_80_soh": "First cycle below 80% SOH",
+            "eol_cycle": "EOL cycle",
+            "reached_eol": "Reached EOL",
+            "avg_degradation_rate_per_cycle": "Average degradation per cycle",
+            "avg_discharge_duration_seconds": "Average discharge duration (s)",
+            "duration_loss_percent": "Duration loss (%)",
+            "health_rank": "Health rank",
+        }
+    )
+
+    st.dataframe(battery_health_display, use_container_width=True)
 
     fig = px.bar(
         battery_health,
@@ -63,8 +97,24 @@ def show_overview(data: dict[str, pd.DataFrame]) -> None:
 
     if not soh_eol.empty:
         st.subheader("SOH and EOL summary")
-        st.dataframe(soh_eol, use_container_width=True)
 
+        soh_eol_display = soh_eol.rename(
+            columns={
+                "battery_id": "Battery",
+                "initial_soh_percent": "Initial SOH (%)",
+                "final_soh_percent": "Final SOH (%)",
+                "min_soh_percent": "Minimum SOH (%)",
+                "avg_soh_percent": "Average SOH (%)",
+                "cycle_below_80_soh": "First cycle below 80% SOH",
+                "eol_cycle": "EOL cycle",
+                "capacity_at_eol_ah": "Capacity at EOL (Ah)",
+                "soh_at_eol_percent": "SOH at EOL (%)",
+                "rul_available": "RUL available",
+            }
+        )
+
+        st.dataframe(soh_eol_display, use_container_width=True)
+        
 
 def show_degradation(data: dict[str, pd.DataFrame]) -> None:
     st.header("Capacity degradation")
