@@ -122,6 +122,8 @@ def build_discharge_cycles(cycle_summary: pd.DataFrame) -> pd.DataFrame:
         "capacity_fade_ah",
         "capacity_fade_percent",
         "duration_seconds",
+        "start_voltage",
+        "end_voltage",
         "voltage_drop",
         "avg_voltage",
         "avg_current",
