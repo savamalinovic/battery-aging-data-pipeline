@@ -28,6 +28,160 @@ def load_data() -> dict[str, pd.DataFrame]:
 
     return data
 
+COLUMN_LABELS = {
+    "battery_id": "Battery",
+    "life_stage": "Life stage",
+    "cycle_index": "Cycle index",
+    "discharge_cycle_number": "Discharge cycle",
+    "capacity_ah": "Capacity (Ah)",
+    "initial_capacity_ah": "Initial capacity (Ah)",
+    "previous_capacity_ah": "Previous capacity (Ah)",
+    "first_capacity_ah": "Initial capacity (Ah)",
+    "final_capacity_ah": "Final capacity (Ah)",
+    "capacity_loss_ah": "Capacity loss (Ah)",
+    "capacity_loss_percent": "Capacity loss (%)",
+    "initial_soh": "Initial SOH",
+    "final_soh": "Final SOH",
+    "initial_soh_percent": "Initial SOH (%)",
+    "final_soh_percent": "Final SOH (%)",
+    "min_soh_percent": "Minimum SOH (%)",
+    "avg_soh_percent": "Average SOH (%)",
+    "soh": "SOH",
+    "eol_flag": "EOL reached",
+    "eol_cycle": "EOL cycle",
+    "reached_eol": "Reached EOL",
+    "cycle_below_80_soh": "First cycle below 80% SOH",
+    "capacity_at_eol_ah": "Capacity at EOL (Ah)",
+    "soh_at_eol_percent": "SOH at EOL (%)",
+    "rul_available": "RUL available",
+    "health_rank": "Health rank",
+    "total_discharge_cycles": "Total discharge cycles",
+    "avg_degradation_rate_per_cycle": "Average degradation per cycle",
+    "avg_discharge_duration_seconds": "Average discharge duration (s)",
+    "duration_loss_percent": "Duration loss (%)",
+    "duration_loss_seconds": "Duration loss (s)",
+    "duration_seconds": "Duration (s)",
+    "initial_duration_seconds": "Initial duration (s)",
+    "final_duration_seconds": "Final duration (s)",
+    "avg_duration_seconds": "Average duration (s)",
+    "corr_duration_capacity": "Duration vs capacity correlation",
+    "corr_duration_soh": "Duration vs SOH correlation",
+    "avg_capacity_ah": "Average capacity (Ah)",
+    "avg_working_temperature": "Average working temperature (°C)",
+    "max_working_temperature": "Maximum working temperature (°C)",
+    "avg_temperature": "Average temperature (°C)",
+    "max_temperature": "Maximum temperature (°C)",
+    "avg_temperature_delta_to_ambient": "Average temperature above ambient (°C)",
+    "temperature_delta_to_ambient": "Temperature above ambient (°C)",
+    "temperature_change_within_stage": "Temperature change within stage (°C)",
+    "delta_to_ambient_change_within_stage": "Ambient-adjusted temperature change (°C)",
+    "avg_start_voltage": "Average start voltage (V)",
+    "avg_end_voltage": "Average end voltage (V)",
+    "avg_voltage": "Average voltage (V)",
+    "avg_voltage_drop": "Average voltage drop (V)",
+    "voltage_drop": "Voltage drop (V)",
+    "voltage_drop_change_within_stage": "Voltage drop improvement within stage (V)",
+    "correlation_voltage_drop_capacity": "Voltage drop vs capacity correlation",
+    "correlation_voltage_drop_soh": "Voltage drop vs SOH correlation",
+    "relative_capacity_drop_percent": "Relative capacity drop (%)",
+    "relative_capacity_change_percent": "Relative capacity change (%)",
+    "absolute_capacity_drop_ah": "Capacity drop (Ah)",
+    "absolute_capacity_change_ah": "Capacity change (Ah)",
+    "early_avg_capacity_ah": "Early average capacity (Ah)",
+    "late_avg_capacity_ah": "Late average capacity (Ah)",
+    "early_to_late_capacity_change_ah": "Early-to-late capacity change (Ah)",
+    "early_to_late_capacity_change_percent": "Early-to-late capacity change (%)",
+    "rolling_capacity_5": "Rolling capacity average",
+    "rolling_soh_5": "Rolling SOH average",
+    "capacity_fade_from_previous_percent": "Capacity change from previous cycle (%)",
+    "capacity_fade_from_initial_percent": "Capacity change from initial cycle (%)",
+    "degradation_acceleration_percent": "Degradation acceleration (%)",
+    "absolute_capacity_drop_percent": "Absolute capacity drop (%)",
+    "scope": "Scope",
+    "x_metric": "First metric",
+    "y_metric": "Second metric",
+    "correlation_method": "Correlation method",
+    "correlation_value": "Correlation value",
+    "sample_count": "Sample count",
+    "interpretation": "Interpretation",
+    "total_cycles": "Total cycles",
+    "valid_cycles": "Valid cycles",
+    "invalid_cycles": "Invalid cycles",
+    "quality_score_percent": "Quality score (%)",
+    "invalid_discharge_cycles": "Invalid discharge cycles",
+    "invalid_impedance_cycles": "Invalid impedance cycles",
+    "top_error_code": "Most common error",
+    "usable_for_health_analytics": "Usable for health analytics",
+    "dataset_name": "Dataset",
+    "file_path": "File path",
+    "required_for_mvp": "Required for MVP",
+    "dashboard_section": "Dashboard section",
+    "grain": "Data grain",
+    "description": "Description",
+}
+
+
+VALUE_LABELS = {
+    "early": "Early",
+    "middle": "Middle",
+    "late": "Late",
+    "all": "All",
+    "all_batteries": "All batteries",
+    "battery": "Single battery",
+    "pearson": "Pearson",
+    "strong_positive": "Strong positive",
+    "moderate_positive": "Moderate positive",
+    "weak_positive": "Weak positive",
+    "very_weak_positive": "Very weak positive",
+    "strong_negative": "Strong negative",
+    "moderate_negative": "Moderate negative",
+    "weak_negative": "Weak negative",
+    "very_weak_negative": "Very weak negative",
+    "not_enough_data": "Not enough data",
+}
+
+
+def natural_label(name: str) -> str:
+    if name in COLUMN_LABELS:
+        return COLUMN_LABELS[name]
+
+    return name.replace("_", " ").title()
+
+
+def natural_value(value):
+    if isinstance(value, str):
+        return VALUE_LABELS.get(value, value.replace("_", " ").title())
+
+    return value
+
+
+def display_dataframe(df: pd.DataFrame) -> None:
+    display = df.copy()
+
+    for column in display.columns:
+        if display[column].dtype == "object":
+            display[column] = display[column].map(natural_value)
+
+    display = display.rename(
+        columns={column: natural_label(column) for column in display.columns}
+    )
+
+    st.dataframe(display, use_container_width=True)
+
+
+def plot_labels(df: pd.DataFrame) -> dict[str, str]:
+    return {column: natural_label(column) for column in df.columns}
+
+
+def chart_data(df: pd.DataFrame) -> pd.DataFrame:
+    display = df.copy()
+
+    for column in display.columns:
+        if display[column].dtype == "object":
+            display[column] = display[column].map(natural_value)
+
+    return display
+
 
 def show_overview(data: dict[str, pd.DataFrame]) -> None:
     st.header("Overview")
@@ -84,14 +238,15 @@ def show_overview(data: dict[str, pd.DataFrame]) -> None:
         }
     )
 
-    st.dataframe(battery_health_display, use_container_width=True)
+    display_dataframe(battery_health_display)
 
     fig = px.bar(
-        battery_health,
+        chart_data(battery_health),
         x="battery_id",
         y="final_soh",
         text="health_rank",
         title="Final SOH by battery",
+        labels=plot_labels(battery_health),
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -113,7 +268,7 @@ def show_overview(data: dict[str, pd.DataFrame]) -> None:
             }
         )
 
-        st.dataframe(soh_eol_display, use_container_width=True)
+        display_dataframe(soh_eol_display)
         
 
 def show_degradation(data: dict[str, pd.DataFrame]) -> None:
@@ -127,13 +282,14 @@ def show_degradation(data: dict[str, pd.DataFrame]) -> None:
         return
 
     st.subheader("Battery-level degradation summary")
-    st.dataframe(degradation, use_container_width=True)
+    display_dataframe(degradation)
 
     fig = px.bar(
-        degradation,
+        chart_data(degradation),
         x="battery_id",
         y="relative_capacity_drop_percent",
         title="Relative capacity drop by battery",
+        labels=plot_labels(degradation),
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -141,20 +297,22 @@ def show_degradation(data: dict[str, pd.DataFrame]) -> None:
         st.subheader("Rolling capacity trend")
 
         fig = px.line(
-            rolling,
+            chart_data(rolling),
             x="discharge_cycle_number",
             y="rolling_capacity_5",
             color="battery_id",
             title="Rolling capacity average over discharge cycles",
+            labels=plot_labels(rolling),
         )
         st.plotly_chart(fig, use_container_width=True)
 
         fig = px.line(
-            rolling,
+            chart_data(rolling),
             x="discharge_cycle_number",
             y="rolling_soh_5",
             color="battery_id",
             title="Rolling SOH average over discharge cycles",
+            labels=plot_labels(rolling),
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -168,25 +326,27 @@ def show_life_stage(data: dict[str, pd.DataFrame]) -> None:
         st.warning("life_stage_summary.parquet is missing or empty.")
         return
 
-    st.dataframe(life_stage, use_container_width=True)
+    display_dataframe(life_stage)
 
     fig = px.bar(
-        life_stage,
+        chart_data(life_stage),
         x="battery_id",
         y="avg_capacity_ah",
         color="life_stage",
         barmode="group",
         title="Average capacity by life stage",
+        labels=plot_labels(life_stage),
     )
     st.plotly_chart(fig, use_container_width=True)
 
     fig = px.bar(
-        life_stage,
+        chart_data(life_stage),
         x="battery_id",
         y="avg_soh_percent",
         color="life_stage",
         barmode="group",
         title="Average SOH by life stage",
+        labels=plot_labels(life_stage),
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -200,37 +360,40 @@ def show_temperature(data: dict[str, pd.DataFrame]) -> None:
         st.warning("temperature_summary.parquet is missing or empty.")
         return
 
-    st.dataframe(temperature, use_container_width=True)
+    display_dataframe(temperature)
 
     stage_rows = temperature[temperature["life_stage"] != "all"]
 
     fig = px.bar(
-        stage_rows,
+        chart_data(stage_rows),
         x="battery_id",
         y="avg_working_temperature",
         color="life_stage",
         barmode="group",
         title="Average working temperature by life stage",
+        labels=plot_labels(stage_rows),
     )
     st.plotly_chart(fig, use_container_width=True)
 
     fig = px.bar(
-        stage_rows,
+        chart_data(stage_rows),
         x="battery_id",
         y="avg_temperature_delta_to_ambient",
         color="life_stage",
         barmode="group",
         title="Average temperature delta to ambient by life stage",
+        labels=plot_labels(stage_rows),
     )
     st.plotly_chart(fig, use_container_width=True)
 
     fig = px.bar(
-        temperature,
+        chart_data(temperature),
         x="battery_id",
         y="temperature_change_within_stage",
         color="life_stage",
         barmode="group",
         title="Temperature change within stage",
+        labels=plot_labels(temperature),
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -244,27 +407,29 @@ def show_voltage(data: dict[str, pd.DataFrame]) -> None:
         st.warning("voltage_summary.parquet is missing or empty.")
         return
 
-    st.dataframe(voltage, use_container_width=True)
+    display_dataframe(voltage)
 
     stage_rows = voltage[voltage["life_stage"] != "all"]
 
     fig = px.bar(
-        stage_rows,
+        chart_data(stage_rows),
         x="battery_id",
         y="avg_voltage_drop",
         color="life_stage",
         barmode="group",
         title="Average voltage drop by life stage",
+        labels=plot_labels(stage_rows),
     )
     st.plotly_chart(fig, use_container_width=True)
 
     fig = px.bar(
-        voltage,
+        chart_data(voltage),
         x="battery_id",
         y="voltage_drop_change_within_stage",
         color="life_stage",
         barmode="group",
         title="Voltage drop change within stage",
+        labels=plot_labels(voltage),
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -279,23 +444,25 @@ def show_duration(data: dict[str, pd.DataFrame]) -> None:
         st.warning("discharge_duration_summary.parquet is missing or empty.")
         return
 
-    st.dataframe(duration, use_container_width=True)
+    display_dataframe(duration)
 
     fig = px.bar(
-        duration,
+        chart_data(duration),
         x="battery_id",
         y="duration_loss_percent",
         title="Discharge duration loss by battery",
+        labels=plot_labels(duration),
     )
     st.plotly_chart(fig, use_container_width=True)
 
     if not discharge_cycles.empty:
         fig = px.scatter(
-            discharge_cycles,
+            chart_data(discharge_cycles),
             x="capacity_ah",
             y="duration_seconds",
             color="battery_id",
             title="Discharge duration vs capacity",
+            labels=plot_labels(discharge_cycles),
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -309,25 +476,55 @@ def show_correlations(data: dict[str, pd.DataFrame]) -> None:
         st.warning("correlation_summary.parquet is missing or empty.")
         return
 
-    st.dataframe(correlations, use_container_width=True)
+    st.markdown(
+        """
+        Correlations show how strongly two metrics move together.
 
-    all_batteries = correlations[
-        correlations["scope"] == "all_batteries"
+        Values close to **+1** mean both metrics usually increase together.
+        Values close to **-1** mean one metric usually increases while the other decreases.
+        Values close to **0** mean there is little linear relationship.
+        """
+    )
+
+    display_dataframe(correlations)
+
+    available_scopes = correlations["battery_id"].unique().tolist()
+
+    selected_scope = st.selectbox(
+        "Correlation scope",
+        options=available_scopes,
+        format_func=natural_value,
+    )
+
+    selected = correlations[
+        correlations["battery_id"] == selected_scope
     ].copy()
 
-    all_batteries["metric_pair"] = (
-        all_batteries["x_metric"] + " vs " + all_batteries["y_metric"]
+    selected["First metric"] = selected["x_metric"].map(natural_label)
+    selected["Second metric"] = selected["y_metric"].map(natural_label)
+
+    heatmap = selected.pivot_table(
+        index="Second metric",
+        columns="First metric",
+        values="correlation_value",
+        aggfunc="mean",
     )
 
-    fig = px.bar(
-        all_batteries,
-        x="metric_pair",
-        y="correlation_value",
-        title="Correlation values across all batteries",
+    fig = px.imshow(
+        heatmap,
+        text_auto=".2f",
+        aspect="auto",
+        zmin=-1,
+        zmax=1,
+        title="Correlation heatmap",
+        labels={
+            "x": "First metric",
+            "y": "Second metric",
+            "color": "Correlation",
+        },
     )
-    fig.update_layout(xaxis_tickangle=-45)
+
     st.plotly_chart(fig, use_container_width=True)
-
 
 def show_data_quality(data: dict[str, pd.DataFrame]) -> None:
     st.header("Data quality")
@@ -341,22 +538,23 @@ def show_data_quality(data: dict[str, pd.DataFrame]) -> None:
         return
 
     st.subheader("Quality summary")
-    st.dataframe(quality, use_container_width=True)
+    display_dataframe(quality)
 
     fig = px.bar(
-        quality,
+        chart_data(quality),
         x="battery_id",
         y="quality_score_percent",
         title="Data quality score by battery",
+        labels=plot_labels(quality),
     )
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Invalid cycles")
-    st.dataframe(invalid, use_container_width=True)
+    display_dataframe(invalid)
 
     if not manifest.empty:
         st.subheader("Dashboard manifest")
-        st.dataframe(manifest, use_container_width=True)
+        display_dataframe(manifest)
 
 
 def main() -> None:

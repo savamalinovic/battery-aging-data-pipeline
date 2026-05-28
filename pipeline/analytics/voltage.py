@@ -21,14 +21,14 @@ def get_last_value(group: pd.DataFrame, column: str) -> float | None:
     return float(group[column].iloc[-1])
 
 
-def calculate_end_minus_start(
+def calculate_start_minus_end(
     start_value: float | None,
     end_value: float | None,
 ) -> float | None:
     if start_value is None or end_value is None:
         return None
 
-    return end_value - start_value
+    return start_value - end_value
 
 
 def safe_correlation(
@@ -90,7 +90,7 @@ def build_voltage_summary(
                     "avg_voltage_drop": float(
                         stage_group["voltage_drop"].mean()
                     ),
-                    "voltage_drop_change_within_stage": calculate_end_minus_start(
+                    "voltage_drop_change_within_stage": calculate_start_minus_end(
                         first_voltage_drop,
                         last_voltage_drop,
                     ),
@@ -132,7 +132,7 @@ def build_voltage_summary(
                 "avg_voltage_drop": float(
                     battery_group["voltage_drop"].mean()
                 ),
-                "voltage_drop_change_within_stage": calculate_end_minus_start(
+                "voltage_drop_change_within_stage": calculate_start_minus_end(
                     first_voltage_drop,
                     final_voltage_drop,
                 ),
