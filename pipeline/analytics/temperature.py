@@ -3,50 +3,74 @@ from typing import Any
 import pandas as pd
 
 
+def get_first_value(group: pd.DataFrame, column: str) -> float | None:
+    if group.empty:
+        return None
+
+    group = group.sort_values("discharge_cycle_number")
+
+    return float(group[column].iloc[0])
+
+
+def get_last_value(group: pd.DataFrame, column: str) -> float | None:
+    if group.empty:
+        return None
+
+    group = group.sort_values("discharge_cycle_number")
+
+    return float(group[column].iloc[-1])
+
+
+def calculate_end_minus_start(
+    start_value: float | None,
+    end_value: float | None,
+) -> float | None:
+    if start_value is None or end_value is None:
+        return None
+
+    return end_value - start_value
+
+
 def build_temperature_summary(
     discharge_cycles: pd.DataFrame,
 ) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
 
     for battery_id, battery_group in discharge_cycles.groupby("battery_id"):
+        battery_group = battery_group.sort_values("discharge_cycle_number")
+
         early = battery_group[battery_group["life_stage"] == "early"]
+        middle = battery_group[battery_group["life_stage"] == "middle"]
         late = battery_group[battery_group["life_stage"] == "late"]
 
-        early_avg_temperature = (
-            float(early["avg_temperature"].mean())
-            if not early.empty
-            else None
-        )
+        stage_groups = {
+            "early": early,
+            "middle": middle,
+            "late": late,
+        }
 
-        late_avg_temperature = (
-            float(late["avg_temperature"].mean())
-            if not late.empty
-            else None
-        )
+        for life_stage, stage_group in stage_groups.items():
+            if stage_group.empty:
+                continue
 
-        early_avg_delta = (
-            float(early["temperature_delta_to_ambient"].mean())
-            if not early.empty
-            else None
-        )
-
-        late_avg_delta = (
-            float(late["temperature_delta_to_ambient"].mean())
-            if not late.empty
-            else None
-        )
-
-        late_vs_early_temperature_change = None
-        if early_avg_temperature is not None and late_avg_temperature is not None:
-            late_vs_early_temperature_change = (
-                late_avg_temperature - early_avg_temperature
+            stage_start_temperature = get_first_value(
+                stage_group,
+                "avg_temperature",
+            )
+            stage_end_temperature = get_last_value(
+                stage_group,
+                "avg_temperature",
             )
 
-        late_vs_early_delta_change = None
-        if early_avg_delta is not None and late_avg_delta is not None:
-            late_vs_early_delta_change = late_avg_delta - early_avg_delta
+            stage_start_delta = get_first_value(
+                stage_group,
+                "temperature_delta_to_ambient",
+            )
+            stage_end_delta = get_last_value(
+                stage_group,
+                "temperature_delta_to_ambient",
+            )
 
-        for life_stage, stage_group in battery_group.groupby("life_stage"):
             rows.append(
                 {
                     "battery_id": battery_id,
@@ -60,10 +84,34 @@ def build_temperature_summary(
                     "avg_temperature_delta_to_ambient": float(
                         stage_group["temperature_delta_to_ambient"].mean()
                     ),
-                    "late_vs_early_temperature_change": late_vs_early_temperature_change,
-                    "late_vs_early_delta_change": late_vs_early_delta_change,
+                    "temperature_change_within_stage": calculate_end_minus_start(
+                        stage_start_temperature,
+                        stage_end_temperature,
+                    ),
+                    "delta_to_ambient_change_within_stage": calculate_end_minus_start(
+                        stage_start_delta,
+                        stage_end_delta,
+                    ),
                 }
             )
+
+        early_start_temperature = get_first_value(
+            early,
+            "avg_temperature",
+        )
+        late_end_temperature = get_last_value(
+            late,
+            "avg_temperature",
+        )
+
+        early_start_delta = get_first_value(
+            early,
+            "temperature_delta_to_ambient",
+        )
+        late_end_delta = get_last_value(
+            late,
+            "temperature_delta_to_ambient",
+        )
 
         rows.append(
             {
@@ -78,8 +126,14 @@ def build_temperature_summary(
                 "avg_temperature_delta_to_ambient": float(
                     battery_group["temperature_delta_to_ambient"].mean()
                 ),
-                "late_vs_early_temperature_change": late_vs_early_temperature_change,
-                "late_vs_early_delta_change": late_vs_early_delta_change,
+                "temperature_change_within_stage": calculate_end_minus_start(
+                    early_start_temperature,
+                    late_end_temperature,
+                ),
+                "delta_to_ambient_change_within_stage": calculate_end_minus_start(
+                    early_start_delta,
+                    late_end_delta,
+                ),
             }
         )
 
