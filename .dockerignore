@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+
+.git/
+.gitignore
+
+.env
+data/
+*.mat
+*.parquet
+*.zip
+
+.vscode/
+.idea/
+
+*.log
