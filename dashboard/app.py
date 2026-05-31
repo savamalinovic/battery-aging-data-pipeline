@@ -118,6 +118,18 @@ COLUMN_LABELS = {
     "dashboard_section": "Dashboard section",
     "grain": "Data grain",
     "description": "Description",
+    "discharge_cycles_health": "Health-valid discharge cycles",
+    "original_discharge_cycle_number": "Original discharge cycle",
+    "reference_capacity_ah": "Reference capacity (Ah)",
+    "capacity_change_from_reference_ah": "Capacity change from reference (Ah)",
+    "capacity_change_from_reference_percent": "Capacity change from reference (%)",
+    "health_quality_summary": "Health quality summary",
+    "plausible_discharge_cycles": "Plausible discharge cycles",
+    "excluded_discharge_cycles": "Excluded discharge cycles",
+    "bad_cycle_percent": "Bad cycle percentage",
+    "health_exclusion_reason": "Health exclusion reason",
+    "excluded_from_health_analytics": "Excluded from health analytics",
+    "health_exclusion_reason": "Health exclusion reason",
 }
 
 
@@ -138,6 +150,13 @@ VALUE_LABELS = {
     "weak_negative": "Weak negative",
     "very_weak_negative": "Very weak negative",
     "not_enough_data": "Not enough data",
+    "too_few_plausible_discharge_cycles": "Too few plausible discharge cycles",
+    "too_many_implausible_discharge_cycles": "Too many implausible discharge cycles",
+    "capacity_non_positive": "Non-positive capacity",
+    "capacity_too_low": "Capacity too low",
+    "capacity_too_high": "Capacity too high",
+    "capacity_jump_too_large": "Capacity jump too large",
+    "invalid_duration": "Invalid duration",
 }
 
 
@@ -214,6 +233,13 @@ def show_overview(data: dict[str, pd.DataFrame]) -> None:
         first discharge cycle where the battery reaches that threshold, even if
         later measurements temporarily recover above 70%.
         """
+    )
+
+    st.info(
+        "Health metrics are calculated only from plausible discharge cycles. "
+        "Batteries with too many implausible capacity values are excluded from "
+        "SOH, EOL, degradation, and ranking analytics, but remain visible in the "
+        "Data Quality tab."
     )
 
     st.subheader("Battery health ranking")
@@ -438,7 +464,7 @@ def show_duration(data: dict[str, pd.DataFrame]) -> None:
     st.header("Discharge duration")
 
     duration = data["discharge_duration_summary"]
-    discharge_cycles = data["discharge_cycles"]
+    discharge_cycles = data["discharge_cycles_health"]
 
     if duration.empty:
         st.warning("discharge_duration_summary.parquet is missing or empty.")
@@ -530,32 +556,66 @@ def show_data_quality(data: dict[str, pd.DataFrame]) -> None:
     st.header("Data quality")
 
     quality = data["data_quality_summary"]
+    health_quality = data["health_quality_summary"]
     invalid = data["invalid_cycles"]
     manifest = data["dashboard_manifest"]
 
-    if quality.empty:
-        st.warning("data_quality_summary.parquet is missing or empty.")
-        return
+    st.markdown(
+        """
+        Data quality is split into two levels:
 
-    st.subheader("Quality summary")
-    display_dataframe(quality)
+        **Raw cycle validation** checks whether cycles have the required fields,
+        valid arrays, valid duration, and readable structure.
 
-    fig = px.bar(
-        chart_data(quality),
-        x="battery_id",
-        y="quality_score_percent",
-        title="Data quality score by battery",
-        labels=plot_labels(quality),
+        **Health analytics filtering** checks whether discharge capacity values
+        are plausible enough to use for SOH, EOL, degradation, health ranking,
+        and trend charts. Batteries with too many implausible discharge cycles
+        are kept in the raw/cleaned data, but excluded from health analytics.
+        """
     )
-    st.plotly_chart(fig, width="stretch")
 
-    st.subheader("Invalid cycles")
+    if not quality.empty:
+        st.subheader("Raw cycle validation summary")
+        display_dataframe(quality)
+
+        fig = px.bar(
+            chart_data(quality),
+            x="battery_id",
+            y="quality_score_percent",
+            title="Raw data quality score by battery",
+            labels=plot_labels(quality),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    if not health_quality.empty:
+        st.subheader("Health analytics eligibility")
+
+        display_dataframe(health_quality)
+
+        fig = px.bar(
+            chart_data(health_quality),
+            x="battery_id",
+            y="bad_cycle_percent",
+            color="usable_for_health_analytics",
+            title="Bad discharge cycle percentage by battery",
+            labels=plot_labels(health_quality),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        excluded = health_quality[
+            health_quality["usable_for_health_analytics"] == False
+        ]
+
+        if not excluded.empty:
+            st.subheader("Batteries excluded from health analytics")
+            display_dataframe(excluded)
+
+    st.subheader("Invalid raw cycles")
     display_dataframe(invalid)
 
     if not manifest.empty:
         st.subheader("Dashboard manifest")
         display_dataframe(manifest)
-
 
 def main() -> None:
     st.title("NASA Battery Health Dashboard")
