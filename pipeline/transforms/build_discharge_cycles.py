@@ -1,5 +1,7 @@
 import pandas as pd
 
+from pipeline.reference_capacity import get_reference_capacity_ah
+
 
 def classify_life_stage(soh: float | None) -> str | None:
     if soh is None:
@@ -35,8 +37,17 @@ def build_discharge_cycles(cycle_summary: pd.DataFrame) -> pd.DataFrame:
         discharge.groupby("battery_id")["capacity_ah"].shift(1)
     )
 
-    # SOH is relative to the first measured discharge capacity of that battery.
+    discharge["reference_capacity_ah"] = discharge["battery_id"].map(
+        get_reference_capacity_ah
+    )
+
+    # Primary SOH uses the configured reference capacity for the battery.
     discharge["soh"] = (
+        discharge["capacity_ah"] / discharge["reference_capacity_ah"]
+    )
+
+    # Keep the first-discharge-relative baseline separately for debugging.
+    discharge["soh_relative_to_initial"] = (
         discharge["capacity_ah"] / discharge["initial_capacity_ah"]
     )
 
@@ -107,9 +118,11 @@ def build_discharge_cycles(cycle_summary: pd.DataFrame) -> pd.DataFrame:
         "cycle_index",
         "start_time",
         "capacity_ah",
+        "reference_capacity_ah",
         "initial_capacity_ah",
         "previous_capacity_ah",
         "soh",
+        "soh_relative_to_initial",
         "eol_flag",
         "capacity_change_from_initial_ah",
         "capacity_change_from_initial_percent",

@@ -3,11 +3,9 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from pipeline.reference_capacity import get_reference_capacity_ah
 from pipeline.raw.cycle_parser import parse_cycle
 from pipeline.validation.cycle_validation import validate_cycle
-
-
-RATED_CAPACITY_AH = 2.0
 
 
 def safe_mean(value: Any) -> float | None:
@@ -64,6 +62,7 @@ def build_cycle_summary_for_battery(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     summary_rows: list[dict[str, Any]] = []
     invalid_rows: list[dict[str, Any]] = []
+    reference_capacity_ah = get_reference_capacity_ah(battery_id)
 
     for cycle_index, cycle in enumerate(cycles):
         parsed = parse_cycle(
@@ -90,7 +89,7 @@ def build_cycle_summary_for_battery(
             capacity_ah = safe_float(data.get("Capacity"))
 
             if capacity_ah is not None:
-                soh = capacity_ah / RATED_CAPACITY_AH
+                soh = capacity_ah / reference_capacity_ah
                 eol_flag = capacity_ah <= 1.4 or soh <= 0.70
 
         avg_voltage = safe_mean(voltage_values)
@@ -118,6 +117,7 @@ def build_cycle_summary_for_battery(
             "ambient_temperature": ambient_temperature,
             "duration_seconds": safe_duration(time_values),
             "sample_count": len(time_values) if isinstance(time_values, np.ndarray) else None,
+            "reference_capacity_ah": reference_capacity_ah,
             "capacity_ah": capacity_ah,
             "soh": soh,
             "eol_flag": eol_flag,

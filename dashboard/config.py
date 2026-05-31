@@ -26,4 +26,6 @@ FILES = {
     "data_quality_summary": ANALYTICS_DIR / "data_quality_summary.parquet",
     "invalid_cycles": QUALITY_DIR / "invalid_cycles.parquet",
     "dashboard_manifest": DASHBOARD_DIR / "dashboard_manifest.parquet",
+    "discharge_cycles_health": CLEANED_DIR / "discharge_cycles_health.parquet",
+    "health_quality_summary": QUALITY_DIR / "health_quality_summary.parquet",
 }

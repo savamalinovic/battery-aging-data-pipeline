@@ -166,7 +166,7 @@ def display_dataframe(df: pd.DataFrame) -> None:
         columns={column: natural_label(column) for column in display.columns}
     )
 
-    st.dataframe(display, use_container_width=True)
+    st.dataframe(display, width="stretch")
 
 
 def plot_labels(df: pd.DataFrame) -> dict[str, str]:
@@ -248,7 +248,7 @@ def show_overview(data: dict[str, pd.DataFrame]) -> None:
         title="Final SOH by battery",
         labels=plot_labels(battery_health),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     if not soh_eol.empty:
         st.subheader("SOH and EOL summary")
@@ -291,7 +291,7 @@ def show_degradation(data: dict[str, pd.DataFrame]) -> None:
         title="Relative capacity drop by battery",
         labels=plot_labels(degradation),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     if not rolling.empty:
         st.subheader("Rolling capacity trend")
@@ -304,7 +304,7 @@ def show_degradation(data: dict[str, pd.DataFrame]) -> None:
             title="Rolling capacity average over discharge cycles",
             labels=plot_labels(rolling),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         fig = px.line(
             chart_data(rolling),
@@ -314,7 +314,7 @@ def show_degradation(data: dict[str, pd.DataFrame]) -> None:
             title="Rolling SOH average over discharge cycles",
             labels=plot_labels(rolling),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 def show_life_stage(data: dict[str, pd.DataFrame]) -> None:
@@ -337,7 +337,7 @@ def show_life_stage(data: dict[str, pd.DataFrame]) -> None:
         title="Average capacity by life stage",
         labels=plot_labels(life_stage),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     fig = px.bar(
         chart_data(life_stage),
@@ -348,7 +348,7 @@ def show_life_stage(data: dict[str, pd.DataFrame]) -> None:
         title="Average SOH by life stage",
         labels=plot_labels(life_stage),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def show_temperature(data: dict[str, pd.DataFrame]) -> None:
@@ -373,7 +373,7 @@ def show_temperature(data: dict[str, pd.DataFrame]) -> None:
         title="Average working temperature by life stage",
         labels=plot_labels(stage_rows),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     fig = px.bar(
         chart_data(stage_rows),
@@ -384,7 +384,7 @@ def show_temperature(data: dict[str, pd.DataFrame]) -> None:
         title="Average temperature delta to ambient by life stage",
         labels=plot_labels(stage_rows),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     fig = px.bar(
         chart_data(temperature),
@@ -395,7 +395,7 @@ def show_temperature(data: dict[str, pd.DataFrame]) -> None:
         title="Temperature change within stage",
         labels=plot_labels(temperature),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def show_voltage(data: dict[str, pd.DataFrame]) -> None:
@@ -420,7 +420,7 @@ def show_voltage(data: dict[str, pd.DataFrame]) -> None:
         title="Average voltage drop by life stage",
         labels=plot_labels(stage_rows),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     fig = px.bar(
         chart_data(voltage),
@@ -431,7 +431,7 @@ def show_voltage(data: dict[str, pd.DataFrame]) -> None:
         title="Voltage drop change within stage",
         labels=plot_labels(voltage),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def show_duration(data: dict[str, pd.DataFrame]) -> None:
@@ -453,7 +453,7 @@ def show_duration(data: dict[str, pd.DataFrame]) -> None:
         title="Discharge duration loss by battery",
         labels=plot_labels(duration),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     if not discharge_cycles.empty:
         fig = px.scatter(
@@ -464,7 +464,7 @@ def show_duration(data: dict[str, pd.DataFrame]) -> None:
             title="Discharge duration vs capacity",
             labels=plot_labels(discharge_cycles),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 def show_correlations(data: dict[str, pd.DataFrame]) -> None:
@@ -524,7 +524,7 @@ def show_correlations(data: dict[str, pd.DataFrame]) -> None:
         },
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 def show_data_quality(data: dict[str, pd.DataFrame]) -> None:
     st.header("Data quality")
@@ -547,7 +547,7 @@ def show_data_quality(data: dict[str, pd.DataFrame]) -> None:
         title="Data quality score by battery",
         labels=plot_labels(quality),
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Invalid cycles")
     display_dataframe(invalid)

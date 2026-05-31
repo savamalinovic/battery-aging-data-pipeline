@@ -10,6 +10,7 @@ data/cleaned/*
 data/analytics/*
 data/quality/*
 data/dashboard/*
+data/downloads/*
 *.mat
 *.parquet
 *.csv
@@ -20,6 +21,7 @@ data/dashboard/*
 !data/analytics/.gitkeep
 !data/quality/.gitkeep
 !data/dashboard/.gitkeep
+!data/downloads/.gitkeep
 
 .vscode/
 .idea/

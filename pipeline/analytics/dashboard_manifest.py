@@ -109,6 +109,22 @@ def build_dashboard_manifest() -> pd.DataFrame:
             "grain": "one row per battery",
             "description": "Battery-level data quality score and invalid-cycle counts.",
         },
+        {
+            "dataset_name": "discharge_cycles_health",
+            "file_path": "cleaned/discharge_cycles_health.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Battery Health / Trends",
+            "grain": "one row per health-valid discharge cycle",
+            "description": "Filtered discharge-cycle table used for SOH, EOL, degradation, ranking, and health analytics.",
+        },
+        {
+            "dataset_name": "health_quality_summary",
+            "file_path": "quality/health_quality_summary.parquet",
+            "required_for_mvp": True,
+            "dashboard_section": "Data Quality",
+            "grain": "one row per battery",
+            "description": "Battery-level health-analytics eligibility summary based on discharge capacity plausibility.",
+        },
     ]
 
     return pd.DataFrame(rows)
