@@ -1,0 +1,35 @@
+{
+  "family": "nasa-battery-pipeline-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "4096",
+  "executionRoleArn": "arn:aws:iam::611491981133:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::611491981133:role/nasaBatteryPipelineTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "nasa-battery-pipeline",
+      "image": "611491981133.dkr.ecr.eu-central-1.amazonaws.com/nasa-battery-pipeline:latest",
+      "essential": true,
+      "command": ["python", "-m", "pipeline.cloud_main"],
+      "environment": [
+        {"name": "AWS_REGION", "value": "eu-central-1"},
+        {"name": "S3_BUCKET", "value": "nasa-battery-pipeline-savam"},
+        {"name": "S3_RAW_PREFIX", "value": "raw/mat/"},
+        {"name": "S3_CLEANED_PREFIX", "value": "output/cleaned/"},
+        {"name": "S3_ANALYTICS_PREFIX", "value": "output/analytics/"},
+        {"name": "S3_QUALITY_PREFIX", "value": "output/quality/"},
+        {"name": "S3_DASHBOARD_PREFIX", "value": "output/dashboard/"},
+        {"name": "LOCAL_DATA_DIR", "value": "data"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/nasa-battery-pipeline",
+          "awslogs-region": "eu-central-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
